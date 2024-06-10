@@ -13,4 +13,8 @@ public class DateUtils {
         return ISO_INSTANT.format(LocalDateTime.now().atOffset(ZoneOffset.UTC));
     }
 
+    public static long nowInSeconds() {
+        return System.currentTimeMillis() / 1000L;
+    }
+
 }

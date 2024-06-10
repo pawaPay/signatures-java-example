@@ -20,6 +20,7 @@ import static com.pawapay.lib.http.signature.model.HttpSignatureConstants.STATUS
 import static com.pawapay.lib.http.signature.model.HttpSignatureConstants.TAG_META_PARAM;
 import static com.pawapay.lib.http.signature.model.HttpSignatureConstants.TAG_META_PARAM_VALUE;
 import static com.pawapay.lib.http.signature.model.HttpSignatureConstants.TARGET_URI_COMPONENT;
+import static com.pawapay.lib.http.signature.util.DateUtils.nowInSeconds;
 import static com.pawapay.lib.http.signature.util.Sequences.first;
 import static com.pawapay.lib.http.signature.util.Sequences.map;
 import static com.pawapay.lib.http.signature.util.Sequences.mapToSet;
@@ -156,7 +157,7 @@ public class SignatureUtils {
 
     public static LinkedHashMap<String, Object> generateMetadata(@Nonnull HttpSignatureConfigParams params, @Nonnull String keyId) {
         final var metadata = new LinkedHashMap<String, Object>();
-        final var currentTime = System.currentTimeMillis();
+        final var currentTime = nowInSeconds();
         for (String param : params.metadata()) {
             final var value = switch (param) {
                 case ALGORITHM_META_PARAM -> params.signatureAlgorithm().alias();
