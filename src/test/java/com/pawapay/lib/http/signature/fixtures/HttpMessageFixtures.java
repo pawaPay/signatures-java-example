@@ -5,8 +5,11 @@ import static org.apache.hc.core5.http.ContentType.APPLICATION_JSON;
 import static org.apache.hc.core5.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE;
 
+import com.google.common.io.Resources;
 import jakarta.annotation.Nonnull;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -24,22 +27,6 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 public class HttpMessageFixtures {
 
     public static final String CUSTOMER_TEST_KEY_ID = "CUSTOMER_TEST_KEY_ID";
-
-    // Sample private key. !!! Do not use in production !!!
-    private static final String REQUEST_PRIVATE_KEY = """
-        -----BEGIN PRIVATE KEY-----
-        MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQghZKTDcEWYulJXOUv
-        qycUvPNISbJMdqispQnMW/xrs5qgCgYIKoZIzj0DAQehRANCAARg8EwlC7ecD124
-        CoatnOL5g3idSL+/k9FCRXbSJwuMIiD6G+kgIP6SNfkGIvTFMr36T8qsQeJ8YiiL
-        HT11yNRq
-        -----END PRIVATE KEY-----""";
-
-    // Should be added in customer panel with value of 'CUSTOMER_TEST_KEY_ID' constant
-    private static final String REQUEST_PUBLIC_KEY = """
-        -----BEGIN PUBLIC KEY-----
-        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEYPBMJQu3nA9duAqGrZzi+YN4nUi/
-        v5PRQkV20icLjCIg+hvpICD+kjX5BiL0xTK9+k/KrEHifGIoix09dcjUag==
-        -----END PUBLIC KEY-----""";
 
     private static final String AUTHORIZATION_TOKEN = "Bearer !!! Your API token here !!!";
 
@@ -69,8 +56,8 @@ public class HttpMessageFixtures {
         return new HttpGet(URI.create(BASE_URL).resolve("./public-key/http"));
     }
 
-    public static PrivateKey getRequestSigningKey(){
-        return decodePrivateKey(REQUEST_PRIVATE_KEY);
+    public static PrivateKey getRequestSigningKey() throws IOException {
+        return decodePrivateKey(Resources.toString(Resources.getResource("private-key.pem"), StandardCharsets.UTF_8));
     }
 
     private static ClassicHttpRequest createRequest(@Nonnull Supplier<String> dataSupplier, @Nonnull URI uri) {
