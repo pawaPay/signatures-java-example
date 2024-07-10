@@ -1,6 +1,6 @@
 package com.pawapay.lib.http.signature;
 
-import static com.pawapay.lib.http.signature.fixtures.HttpMessageFixtures.CUSTOMER_TEST_KEY_ID;
+import static com.pawapay.lib.http.signature.fixtures.Configuration.getConfiguration;
 import static com.pawapay.lib.http.signature.fixtures.HttpMessageFixtures.createDepositRequest;
 import static com.pawapay.lib.http.signature.fixtures.HttpMessageFixtures.createPublicKeyRequest;
 import static com.pawapay.lib.http.signature.fixtures.HttpMessageFixtures.decodePublicKey;
@@ -42,7 +42,7 @@ public class SignedApiRequestTest {
     public void depositRequest() throws IOException {
         final var parameters = new DefaultHttpSignatureConfigParams();
 
-        final var signatureGenerator = new SignatureGeneratorImpl(CUSTOMER_TEST_KEY_ID, getRequestSigningKey(), parameters);
+        final var signatureGenerator = new SignatureGeneratorImpl(getConfiguration().keyId(), getRequestSigningKey(), parameters);
         final var requestSigner = new HttpClientRequestSignerImpl(signatureGenerator, parameters);
         final var requestSigningInterceptor = new HttpClientRequestSigningInterceptor(requestSigner);
 

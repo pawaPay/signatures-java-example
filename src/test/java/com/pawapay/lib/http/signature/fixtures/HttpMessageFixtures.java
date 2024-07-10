@@ -1,5 +1,6 @@
 package com.pawapay.lib.http.signature.fixtures;
 
+import static com.pawapay.lib.http.signature.fixtures.Configuration.getConfiguration;
 import static com.pawapay.lib.http.signature.util.DateUtils.utcDateTimeString;
 import static org.apache.hc.core5.http.ContentType.APPLICATION_JSON;
 import static org.apache.hc.core5.http.HttpHeaders.AUTHORIZATION;
@@ -26,12 +27,6 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 
 public class HttpMessageFixtures {
 
-    public static final String CUSTOMER_TEST_KEY_ID = "CUSTOMER_TEST_KEY_ID";
-
-    private static final String AUTHORIZATION_TOKEN = "Bearer !!! Your API token here !!!";
-
-    public static final String BASE_URL = "https://api.sandbox.pawapay.cloud";
-
     private static final Supplier<String> DEPOSIT_REQUEST_SUPPLIER = () -> """
         {
             "depositId": "%s",
@@ -49,11 +44,11 @@ public class HttpMessageFixtures {
         }""".formatted(UUID.randomUUID().toString(), utcDateTimeString());
 
     public static ClassicHttpRequest createDepositRequest() {
-        return createRequest(DEPOSIT_REQUEST_SUPPLIER, URI.create(BASE_URL).resolve("./deposits"));
+        return createRequest(DEPOSIT_REQUEST_SUPPLIER, URI.create(getConfiguration().baseUrl()).resolve("./deposits"));
     }
 
     public static ClassicHttpRequest createPublicKeyRequest() {
-        return new HttpGet(URI.create(BASE_URL).resolve("./public-key/http"));
+        return new HttpGet(URI.create(getConfiguration().baseUrl()).resolve("./public-key/http"));
     }
 
     public static PrivateKey getRequestSigningKey() throws IOException {
@@ -64,7 +59,7 @@ public class HttpMessageFixtures {
         final var entity = createRequestEntity(dataSupplier);
         final var request = new HttpPost(uri);
         request.setEntity(entity);
-        request.addHeader(AUTHORIZATION, AUTHORIZATION_TOKEN);
+        request.addHeader(AUTHORIZATION, getConfiguration().authToken());
         request.addHeader(CONTENT_TYPE, APPLICATION_JSON);
         return request;
     }
