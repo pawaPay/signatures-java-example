@@ -9,14 +9,11 @@ import static org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE;
 import com.google.common.io.Resources;
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -24,6 +21,10 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 
 public class HttpMessageFixtures {
 
@@ -70,10 +71,8 @@ public class HttpMessageFixtures {
 
     private static PrivateKey decodePrivateKey(@Nonnull String pemKey) {
         try {
-            byte[] privateKeyBytes = Base64.getDecoder().decode(removeHeaderAndFooter(pemKey, "PRIVATE KEY"));
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("EC");
-            return keyFactory.generatePrivate(keySpec);
+            var pemKeyPair = (PEMKeyPair) parsePEMString(pemKey);
+            return new JcaPEMKeyConverter().getKeyPair(pemKeyPair).getPrivate();
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
@@ -81,18 +80,15 @@ public class HttpMessageFixtures {
 
     public static PublicKey decodePublicKey(@Nonnull String pemKey) {
         try {
-            byte[] publicKeyBytes = Base64.getDecoder().decode(removeHeaderAndFooter(pemKey, "PUBLIC KEY"));
-            return KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+            var keyInfo = (SubjectPublicKeyInfo) parsePEMString(pemKey);
+            return new JcaPEMKeyConverter().getPublicKey(keyInfo);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
     }
 
-    private static String removeHeaderAndFooter(@javax.annotation.Nonnull String pemKey, @javax.annotation.Nonnull String type) {
-        return pemKey
-            .replace("-----BEGIN %s-----".formatted(type), "")
-            .replaceAll("\\r\\n|\\r|\\n", "")
-            .replace("-----END %s-----".formatted(type), "");
+    private static Object parsePEMString(@Nonnull final String pem) throws IOException {
+        return new PEMParser(new StringReader(pem)).readObject();
     }
 
 }
